@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { refreshTemplateMetricsForHabit } from "@/lib/challenge-templates";
 
 export class NotFoundError extends Error {
   constructor(message = "Not found") {
@@ -352,6 +353,8 @@ export async function toggleLogForDate(userId: string, habitId: string, dateKey:
       },
     });
   }
+
+  await refreshTemplateMetricsForHabit(habit.id);
 
   const updatedHabit = await getHabitWithLogs(userId, habitId);
 

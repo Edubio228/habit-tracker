@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export async function Navbar() {
   const user = await getCurrentUser();
@@ -15,6 +16,7 @@ export async function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Link href="/challenges" className="text-sm font-medium text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100">
             Challenges
           </Link>

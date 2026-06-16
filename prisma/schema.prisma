@@ -7,19 +7,33 @@ datasource db {
   // The connection URL is now configured in prisma.config.ts
 }
 
+enum ChallengeTemplateStatus {
+  draft
+  published
+  archived
+}
+
+enum ChallengeImportStatus {
+  active
+  completed
+  abandoned
+}
+
 model User {
-  id            String      @id @default(cuid())
-  email         String      @unique
-  name          String?
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  habits        Habit[]
-  challenges    Challenge[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id               String              @id @default(cuid())
+  email            String              @unique
+  name             String?
+  emailVerified    DateTime?
+  password         String?
+  image            String?
+  accounts         Account[]
+  sessions         Session[]
+  habits           Habit[]
+  challenges       Challenge[]
+  createdTemplates ChallengeTemplate[]
+  imports          ChallengeImport[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 }
 
 model Account {
@@ -100,8 +114,10 @@ model Challenge {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  habits ChallengeHabit[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habits          ChallengeHabit[]
+  sourceTemplates ChallengeTemplate[]
+  imports         ChallengeImport[]
 
   @@index([userId, startDate])
 }
@@ -116,4 +132,67 @@ model ChallengeHabit {
 
   @@id([challengeId, habitId])
   @@index([habitId])
+}
+
+model ChallengeTemplate {
+  id                    String                  @id @default(cuid())
+  challengeId           String?
+  creatorId             String
+  title                 String
+  description           String?                 @db.Text
+  durationDays          Int
+  shareToken            String                  @unique
+  slug                  String?                 @unique
+  status                ChallengeTemplateStatus @default(draft)
+  publishedAt           DateTime?
+  totalImports          Int                     @default(0)
+  activeParticipants    Int                     @default(0)
+  averageCompletionRate Int                     @default(0)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  creator         User                     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  sourceChallenge Challenge?               @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  habits          ChallengeTemplateHabit[]
+  imports         ChallengeImport[]
+
+  @@index([creatorId, status])
+  @@index([shareToken])
+  @@index([slug])
+}
+
+model ChallengeTemplateHabit {
+  id          String  @id @default(cuid())
+  templateId  String
+  name        String
+  description String?
+  goalType    String  @default("daily")
+  goalCount   Int     @default(1)
+  goalUnit    String  @default("day")
+  color       String  @default("#2A9D8F")
+  sortOrder   Int     @default(0)
+
+  template ChallengeTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, sortOrder])
+}
+
+model ChallengeImport {
+  id                  String                @id @default(cuid())
+  templateId          String
+  userId              String
+  importedChallengeId String
+  startDate           DateTime
+  endDate             DateTime
+  status              ChallengeImportStatus @default(active)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  template          ChallengeTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  importedChallenge Challenge         @relation(fields: [importedChallengeId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, userId])
+  @@index([userId])
+  @@index([templateId, status])
 }

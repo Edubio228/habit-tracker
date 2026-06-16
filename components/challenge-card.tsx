@@ -5,6 +5,9 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { AvailableHabitDto, ChallengeDto } from "@/lib/challenges";
+import type { ChallengeTemplateDto } from "@/lib/challenge-templates";
+
+import { ChallengePublishPanel } from "@/components/challenge-publish-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -16,13 +19,18 @@ type ChallengeCardActionState = {
 };
 
 type ChallengeCardAction = (previousState: ChallengeCardActionState, formData: FormData) => Promise<ChallengeCardActionState>;
+type ChallengePublishAction = (challengeId: string, previousState: ChallengeCardActionState, formData: FormData) => Promise<ChallengeCardActionState>;
 
 type ChallengeCardProps = {
   challenge: ChallengeDto;
   availableHabits: AvailableHabitDto[];
+  template: ChallengeTemplateDto | null;
   deleteAction: ChallengeCardAction;
   addHabitAction: ChallengeCardAction;
   removeHabitAction: ChallengeCardAction;
+  publishAction: ChallengePublishAction;
+  unpublishTemplateAction: ChallengeCardAction;
+  deleteTemplateAction: ChallengeCardAction;
 };
 
 function formatDate(value: string) {
@@ -37,22 +45,35 @@ function goalLabel(habit: ChallengeDto["habits"][number]["habit"]) {
   return `${habit.goalCount} ${habit.goalUnit}${habit.goalCount === 1 ? "" : "s"} / ${habit.goalType}`;
 }
 
-export function ChallengeCard({ challenge, availableHabits, deleteAction, addHabitAction, removeHabitAction }: ChallengeCardProps) {
+export function ChallengeCard({
+  challenge,
+  availableHabits,
+  template,
+  deleteAction,
+  addHabitAction,
+  removeHabitAction,
+  publishAction,
+  unpublishTemplateAction,
+  deleteTemplateAction,
+}: ChallengeCardProps) {
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState(availableHabits[0]?.id ?? "");
   const [deleteState, deleteFormAction, isDeleting] = useActionState(deleteAction, {});
   const [addState, addFormAction, isAddingHabit] = useActionState(addHabitAction, {});
   const [removeState, removeFormAction, isRemovingHabit] = useActionState(removeHabitAction, {});
+  const [publishState] = useActionState((previousState: ChallengeCardActionState, formData: FormData) => publishAction(challenge.id, previousState, formData), {});
+  const [unpublishTemplateState] = useActionState(unpublishTemplateAction, {});
+  const [deleteTemplateState] = useActionState(deleteTemplateAction, {});
   const accentColor = challenge.habits[0]?.habit.color ?? "#2A9D8F";
   const availableToAdd = availableHabits.filter((habit) => !challenge.habits.some((challengeHabit) => challengeHabit.habit.id === habit.id));
   const selectedHabitIsAvailable = availableToAdd.some((habit) => habit.id === selectedHabitId);
 
   useEffect(() => {
-    if (deleteState.success || addState.success || removeState.success) {
+    if (deleteState.success || addState.success || removeState.success || publishState.success || unpublishTemplateState.success || deleteTemplateState.success) {
       router.refresh();
     }
-  }, [addState.success, deleteState.success, removeState.success, router]);
+  }, [addState.success, deleteState.success, publishState.success, removeState.success, router, unpublishTemplateState.success, deleteTemplateState.success]);
 
   return (
     <Card className="space-y-5" style={{ borderLeft: `6px solid ${accentColor}` }}>
@@ -102,6 +123,16 @@ export function ChallengeCard({ challenge, availableHabits, deleteAction, addHab
             <p className="mt-1 text-2xl font-semibold text-zinc-950 dark:text-zinc-100">{challenge.progress.completionRate}%</p>
           </div>
         </div>
+
+        <ChallengePublishPanel
+          challengeId={challenge.id}
+          challengeName={challenge.name}
+          challengeDescription={challenge.description}
+          template={template}
+          publishAction={publishAction}
+          unpublishAction={unpublishTemplateAction}
+          deleteTemplateAction={deleteTemplateAction}
+        />
 
         {isAdding ? (
           <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
