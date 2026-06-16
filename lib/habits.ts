@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Habit, Log, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
@@ -12,9 +12,8 @@ export class NotFoundError extends Error {
   }
 }
 
-type HabitWithLogs = Habit & {
-  logs: Log[];
-};
+type HabitWithLogs = NonNullable<Awaited<ReturnType<typeof prisma.habit.findFirst<{ include: { logs: true } }>>>>;
+type HabitLog = HabitWithLogs["logs"][number];
 
 export type HabitDto = {
   id: string;
@@ -151,11 +150,11 @@ function parseActiveValue(value: unknown) {
   return value;
 }
 
-function getCompletedDateKeys(logs: Log[]) {
+function getCompletedDateKeys(logs: HabitLog[]) {
   return new Set(logs.filter((log) => log.completed).map((log) => dateToKey(log.date)));
 }
 
-export function calculateStreak(_habitId: string, endDateKey: string, logs: Log[]) {
+export function calculateStreak(_habitId: string, endDateKey: string, logs: HabitLog[]) {
   const completedDates = getCompletedDateKeys(logs);
   let streak = 0;
   let cursor = endDateKey;
@@ -168,7 +167,7 @@ export function calculateStreak(_habitId: string, endDateKey: string, logs: Log[
   return streak;
 }
 
-export function calculateCompletionRate(_habitId: string, startKey: string, endKey: string, logs: Log[]) {
+export function calculateCompletionRate(_habitId: string, startKey: string, endKey: string, logs: HabitLog[]) {
   const totalDays = daysBetween(startKey, endKey);
 
   if (totalDays <= 0) {
