@@ -15,6 +15,9 @@ export async function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
+          <Link href="/challenges" className="text-sm font-medium text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100">
+            Challenges
+          </Link>
           <span className="hidden text-sm text-zinc-600 dark:text-zinc-400 sm:inline">{user?.email}</span>
           <LogoutButton />
         </div>

@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String      @id @default(cuid())
+  email         String      @unique
   name          String?
   emailVerified DateTime?
   password      String?
@@ -17,8 +17,9 @@ model User {
   accounts      Account[]
   sessions      Session[]
   habits        Habit[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  challenges    Challenge[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Account {
@@ -70,8 +71,9 @@ model Habit {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs Log[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs            Log[]
+  challengeHabits ChallengeHabit[]
 }
 
 model Log {
@@ -85,4 +87,33 @@ model Log {
   habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
 
   @@unique([habitId, date])
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habits ChallengeHabit[]
+
+  @@index([userId, startDate])
+}
+
+model ChallengeHabit {
+  challengeId String
+  habitId     String
+  sortOrder   Int    @default(0)
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  habit     Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@id([challengeId, habitId])
+  @@index([habitId])
 }
