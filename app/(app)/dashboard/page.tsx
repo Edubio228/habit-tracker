@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/habits";
 import { getTodayKey, getDashboardData } from "@/lib/habits";
 import { requireCurrentUser } from "@/lib/session";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { HabitCard } from "@/components/habit-card";
 import { HabitForm } from "@/components/habit-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,10 +27,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryCard label="Active habits" value={dashboard.summary.totalHabits.toString()} />
-        <SummaryCard label="Completed today" value={dashboard.summary.completedToday.toString()} />
-        <SummaryCard label="Today&apos;s completion" value={`${dashboard.summary.completionRate}%`} />
-        <SummaryCard label="Average streak" value={`${dashboard.summary.averageStreak} days`} />
+        <SummaryCard label="Active habits" value={dashboard.summary.totalHabits.toString()} info="Habits marked active. Inactive habits are hidden from the dashboard." />
+        <SummaryCard label="Completed today" value={dashboard.summary.completedToday.toString()} info="Habits with today's completion toggle turned on." />
+        <SummaryCard label="Today's completion" value={`${dashboard.summary.completionRate}%`} info="Completed today divided by active habits." />
+        <SummaryCard label="Average streak" value={`${dashboard.summary.averageStreak} days`} info="Average current daily streak across active habits." />
       </div>
 
       <HabitForm action={createHabitAction} submitLabel="Create habit" />
@@ -60,11 +61,14 @@ export default async function DashboardPage() {
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
+function SummaryCard({ label, value, info }: { label: string; value: string; info?: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>{label}</CardDescription>
+        <CardDescription className="flex items-center gap-2">
+          <span>{label}</span>
+          {info ? <InfoTooltip content={info} /> : null}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-3xl font-semibold text-zinc-950 dark:text-zinc-100">{value}</p>

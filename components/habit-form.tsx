@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import type { HabitDto } from "@/lib/habits";
 import { AuthFormMessage } from "@/components/auth-form-message";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,35 +44,53 @@ export function HabitForm({ action, initialData, submitLabel = "Save habit", cla
         <AuthFormMessage state={state} successMessage={initialData ? "Habit updated." : "Habit created."} />
 
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name" className="flex items-center gap-2">
+            Name
+            <InfoTooltip content="Use a short, specific name that makes the habit easy to recognize." />
+          </Label>
           <Input id="name" name="name" defaultValue={initialData?.name ?? ""} required />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="flex items-center gap-2">
+            Description
+            <InfoTooltip content="Optional context, reminders, or rules for completing the habit." />
+          </Label>
           <Input id="description" name="description" defaultValue={initialData?.description ?? ""} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="goalType">Goal type</Label>
+            <Label htmlFor="goalType" className="flex items-center gap-2">
+              Goal type
+              <InfoTooltip content="This MVP tracks daily habits. Weekly, monthly, and custom cadences are not stored yet." />
+            </Label>
             <Input id="goalType" name="goalType" value="daily" readOnly />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="goalCount">Goal count</Label>
+            <Label htmlFor="goalCount" className="flex items-center gap-2">
+              Goal count
+              <InfoTooltip content="The number of units required for one daily completion." />
+            </Label>
             <Input id="goalCount" name="goalCount" type="number" min="1" max="100" defaultValue={initialData?.goalCount ?? 1} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="goalUnit">Goal unit</Label>
+            <Label htmlFor="goalUnit" className="flex items-center gap-2">
+              Goal unit
+              <InfoTooltip content="The unit for the goal count, such as day, minute, page, or glass." />
+            </Label>
             <Input id="goalUnit" name="goalUnit" defaultValue={initialData?.goalUnit ?? "day"} />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="color">Color</Label>
+            <Label htmlFor="color" className="flex items-center gap-2">
+              Color
+              <InfoTooltip content="Used as the visual accent for this habit on the dashboard." />
+            </Label>
             <Input id="color" name="color" type="color" defaultValue={initialData?.color ?? "#2A9D8F"} />
           </div>
 
@@ -85,6 +104,7 @@ export function HabitForm({ action, initialData, submitLabel = "Save habit", cla
               className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-950 dark:border-zinc-700 dark:text-zinc-100"
             />
             Active
+            <InfoTooltip content="Active habits appear on the dashboard. Inactive habits are kept but hidden from the main list." />
           </label>
         </div>
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { updateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
@@ -16,7 +16,7 @@ import {
   updateHabitSchema,
   updateLogNote,
 } from "@/lib/habits";
-import { dashboardCacheTag, requireCurrentUser } from "@/lib/session";
+import { requireCurrentUser } from "@/lib/session";
 
 type HabitActionState<T = unknown> = {
   success?: boolean;
@@ -53,7 +53,7 @@ export async function createHabitAction(_previousState: HabitActionState, formDa
     }
 
     const data = await createHabit(user.id, parsed.data);
-    updateTag(dashboardCacheTag(user.id));
+    revalidatePath("/dashboard");
 
     return { success: true, data };
   } catch (error) {
@@ -71,7 +71,7 @@ export async function updateHabitAction(habitId: string, _previousState: HabitAc
     }
 
     const data = await updateHabit(user.id, habitId, parsed.data);
-    updateTag(dashboardCacheTag(user.id));
+    revalidatePath("/dashboard");
 
     return { success: true, data };
   } catch (error) {
@@ -89,7 +89,7 @@ export async function deleteHabitAction(_previousState: HabitActionState, formDa
     }
 
     await deleteHabit(user.id, parsed.data.habitId);
-    updateTag(dashboardCacheTag(user.id));
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error) {
@@ -107,7 +107,7 @@ export async function toggleCompletionAction(_previousState: HabitActionState, f
     }
 
     const data = await toggleLogForDate(user.id, parsed.data.habitId, parsed.data.dateKey);
-    updateTag(dashboardCacheTag(user.id));
+    revalidatePath("/dashboard");
 
     return { success: true, data };
   } catch (error) {
@@ -125,7 +125,7 @@ export async function updateNoteAction(_previousState: HabitActionState, formDat
     }
 
     const data = await updateLogNote(user.id, parsed.data.habitId, parsed.data.dateKey, parsed.data.note ?? "");
-    updateTag(dashboardCacheTag(user.id));
+    revalidatePath("/dashboard");
 
     return { success: true, data };
   } catch (error) {

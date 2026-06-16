@@ -50,7 +50,7 @@ export const habitSchema = z.object({
   goalCount: z.coerce.number().int().positive("Goal count must be greater than zero.").max(100, "Goal count must be 100 or fewer.").default(1),
   goalUnit: z.string().trim().min(1, "Goal unit is required.").max(30, "Goal unit must be 30 characters or fewer.").default("day"),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color like #2A9D8F.").default("#2A9D8F"),
-  active: z.preprocess((value) => (value === undefined ? undefined : value === "on"), z.boolean()).default(true),
+  active: z.preprocess(parseActiveValue, z.boolean()).default(true),
 });
 
 export const updateHabitSchema = z.object({
@@ -60,7 +60,7 @@ export const updateHabitSchema = z.object({
   goalCount: z.coerce.number().int().positive("Goal count must be greater than zero.").max(100, "Goal count must be 100 or fewer.").optional(),
   goalUnit: z.string().trim().min(1, "Goal unit is required.").max(30, "Goal unit must be 30 characters or fewer.").optional(),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color like #2A9D8F.").optional(),
-  active: z.preprocess((value) => (value === undefined ? undefined : value === "on"), z.boolean()).optional(),
+  active: z.preprocess(parseActiveValue, z.boolean()).optional(),
 });
 
 export const habitIdSchema = z.object({
@@ -133,6 +133,22 @@ function normalizeNote(note?: string | null) {
   const trimmed = note?.trim() ?? "";
 
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseActiveValue(value: unknown) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === "on" || value === "true") {
+    return true;
+  }
+
+  if (value === "off" || value === "false") {
+    return false;
+  }
+
+  return value;
 }
 
 function getCompletedDateKeys(logs: Log[]) {
