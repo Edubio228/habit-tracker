@@ -63,9 +63,18 @@ export function HabitForm({ action, initialData, submitLabel = "Save habit", cla
           <div className="space-y-2">
             <Label htmlFor="goalType" className="flex items-center gap-2">
               Goal type
-              <InfoTooltip content="This MVP tracks daily habits. Weekly, monthly, and custom cadences are not stored yet." />
+              <InfoTooltip content="Choose how often this habit repeats." />
             </Label>
-            <Input id="goalType" name="goalType" value="daily" readOnly />
+            <select
+              id="goalType"
+              name="goalType"
+              defaultValue={initialData?.goalType ?? "daily"}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-100 dark:focus:ring-zinc-100/20"
+            >
+              <option value="daily">daily</option>
+              <option value="weekly">weekly</option>
+              <option value="monthly">monthly</option>
+            </select>
           </div>
 
           <div className="space-y-2">

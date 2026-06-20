@@ -16,6 +16,9 @@ export class NotFoundError extends Error {
 type HabitWithLogs = NonNullable<Awaited<ReturnType<typeof prisma.habit.findFirst<{ include: { logs: true } }>>>>;
 type HabitLog = HabitWithLogs["logs"][number];
 
+export const goalTypeSchema = z.enum(["daily", "weekly", "monthly"]);
+export type GoalType = z.infer<typeof goalTypeSchema>;
+
 export type HabitDto = {
   id: string;
   name: string;
@@ -46,7 +49,7 @@ export type DashboardDto = {
 export const habitSchema = z.object({
   name: z.string().trim().min(1, "Habit name is required.").max(80, "Habit name must be 80 characters or fewer."),
   description: z.string().trim().max(500, "Description must be 500 characters or fewer.").optional().nullable(),
-  goalType: z.enum(["daily"]).default("daily"),
+  goalType: goalTypeSchema.default("daily"),
   goalCount: z.coerce.number().int().positive("Goal count must be greater than zero.").max(100, "Goal count must be 100 or fewer.").default(1),
   goalUnit: z.string().trim().min(1, "Goal unit is required.").max(30, "Goal unit must be 30 characters or fewer.").default("day"),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color like #2A9D8F.").default("#2A9D8F"),
@@ -56,7 +59,7 @@ export const habitSchema = z.object({
 export const updateHabitSchema = z.object({
   name: z.string().trim().min(1, "Habit name is required.").max(80, "Habit name must be 80 characters or fewer.").optional(),
   description: z.string().trim().max(500, "Description must be 500 characters or fewer.").optional().nullable(),
-  goalType: z.enum(["daily"]).optional(),
+  goalType: goalTypeSchema.optional(),
   goalCount: z.coerce.number().int().positive("Goal count must be greater than zero.").max(100, "Goal count must be 100 or fewer.").optional(),
   goalUnit: z.string().trim().min(1, "Goal unit is required.").max(30, "Goal unit must be 30 characters or fewer.").optional(),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color like #2A9D8F.").optional(),
